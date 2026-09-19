@@ -21,6 +21,14 @@ public class BuilderScreen extends Screen {
         ).dimensions(x, 70, 200, 20).build());
 
         addDrawableChild(ButtonWidget.builder(
+                Text.literal("Materials"),
+                button -> {
+                    if (BuilderManager.hasBuild()) client.setScreen(new MaterialsScreen(this));
+                    else AutoBuilderClient.message(client, "§cSelect a schematic first");
+                }
+        ).dimensions(x, 100, 200, 20).build());
+
+        addDrawableChild(ButtonWidget.builder(
                 Text.literal("Start Build"),
                 button -> {
                     if (BuilderManager.hasBuild()) {
@@ -31,7 +39,7 @@ public class BuilderScreen extends Screen {
                         AutoBuilderClient.message(client, "§cSelect a schematic first");
                     }
                 }
-        ).dimensions(x, 100, 200, 20).build());
+        ).dimensions(x, 130, 200, 20).build());
 
         addDrawableChild(ButtonWidget.builder(
                 Text.literal("Pause / Resume"),
@@ -42,7 +50,7 @@ public class BuilderScreen extends Screen {
                         AutoBuilderClient.state = AutoBuilderClient.BuildState.RUNNING;
                     }
                 }
-        ).dimensions(x, 130, 200, 20).build());
+        ).dimensions(x, 160, 200, 20).build());
 
         addDrawableChild(ButtonWidget.builder(
                 Text.literal("Stop"),
@@ -50,7 +58,7 @@ public class BuilderScreen extends Screen {
                     BuilderManager.stop();
                     AutoBuilderClient.state = AutoBuilderClient.BuildState.STOPPED;
                 }
-        ).dimensions(x, 160, 200, 20).build());
+        ).dimensions(x, 190, 200, 20).build());
     }
 
     @Override

@@ -3,6 +3,8 @@ package com.autobuilder;
 import net.minecraft.client.MinecraftClient;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Map;
 
 public final class BuilderManager {
 
@@ -51,6 +53,11 @@ public final class BuilderManager {
         return selectedSchematic == null
                 ? null
                 : selectedSchematic.getName();
+    }
+
+    public static Map<String, Long> getMaterials() throws IOException {
+        if (selectedSchematic == null) return Map.of();
+        return LitematicMaterials.read(selectedSchematic);
     }
 
     public static String getMissingItem() {
