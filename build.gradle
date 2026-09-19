@@ -12,13 +12,15 @@ base {
 
 repositories {
     mavenCentral()
+
     maven {
         name = "Fabric"
         url = "https://maven.fabricmc.net/"
     }
+
     maven {
-        name = "Masa"
-        url = "https://masa.dy.fi/maven"
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
     }
 }
 
@@ -30,8 +32,11 @@ dependencies {
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:0.141.3+1.21.11"
 
-    modCompileOnly "fi.dy.masa.malilib:malilib-fabric-1.21.11:0.27.16"
-    modCompileOnly "fi.dy.masa.litematica:litematica-fabric-1.21.11:0.26.11"
+    // MaLiLib 1.21.11 - 0.27.16
+    modCompileOnly "maven.modrinth:GcWjdA9I:oaU4Ys3J"
+
+    // Litematica 1.21.11 - 0.26.11
+    modCompileOnly "maven.modrinth:bEpr0Arc:R9maucI8"
 }
 
 processResources {
