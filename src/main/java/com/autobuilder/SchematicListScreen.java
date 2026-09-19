@@ -20,10 +20,9 @@ public class SchematicListScreen extends Screen {
 
     @Override
     protected void init() {
-        File folder = new File(
-                MinecraftClient.getInstance().runDirectory,
-                "schematics"
-        );
+        File minecraftFolder = MinecraftClient.getInstance().runDirectory;
+
+        File folder = new File(minecraftFolder, "schematics");
 
         if (!folder.exists()) {
             folder.mkdirs();
@@ -34,10 +33,12 @@ public class SchematicListScreen extends Screen {
                 file.getName().toLowerCase().endsWith(".litematic")
         );
 
-        if (files != null) {
-            Arrays.sort(files);
+        int y = 45;
 
-            int y = 45;
+        if (files != null && files.length > 0) {
+            Arrays.sort(files, (a, b) ->
+                    a.getName().compareToIgnoreCase(b.getName())
+            );
 
             for (File file : files) {
                 if (y > height - 60) {
@@ -59,6 +60,11 @@ public class SchematicListScreen extends Screen {
 
                 y += 24;
             }
+        } else {
+            System.out.println(
+                    "[AutoSchematicBuilder] No .litematic files found in: "
+                            + folder.getAbsolutePath()
+            );
         }
 
         addDrawableChild(ButtonWidget.builder(
