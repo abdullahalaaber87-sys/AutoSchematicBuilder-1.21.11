@@ -22,7 +22,7 @@ public final class BuilderManager {
     private static String missingItem;
     
     private static int tickCounter = 0;
-    private static int placementDelay = 4; // Randomized delay to defeat easy-place heuristics
+    private static int placementDelay = 3;
     private static final Random random = new Random();
 
     private BuilderManager() {
@@ -35,7 +35,7 @@ public final class BuilderManager {
 
         AutoBuilderClient.message(
                 MinecraftClient.getInstance(),
-                "§aSelected (Anti-Cheat Bypass): §f" + file.getName()
+                "§aSelected: §f" + file.getName()
         );
     }
 
@@ -51,8 +51,7 @@ public final class BuilderManager {
             return;
         }
         
-        // Randomize delay slightly to look organic and avoid pattern triggers
-        placementDelay = 3 + random.nextInt(3); 
+        placementDelay = 2 + random.nextInt(3); 
         tickCounter = 0;
 
         processBypassPlacement(client);
@@ -70,7 +69,7 @@ public final class BuilderManager {
         }
 
         if (player.getBlockPos().getSquaredDistance(targetPos) > 16.0) {
-            return; // Keep distance tight to avoid reach flags
+            return;
         }
 
         int slot = findRequiredItemSlot(player);
@@ -90,42 +89,45 @@ public final class BuilderManager {
         ClientPlayerEntity player = client.player;
         if (player == null || client.getNetworkHandler() == null) return;
 
-        // Calculate exact vectors and face
         Vec3d hitVec = new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
         Direction side = Direction.UP;
 
-        // Step 1: Send silent look packet to match server-side rotation expectations
         double diffX = hitVec.x - player.getX();
         double diffY = hitVec.y - (player.getY() + player.getEyeHeight());
         double diffZ = hitVec.z - player.getZ();
         double dist = Math.sqrt(diffX * diffX + diffZ * diffZ);
 
-        float yaw = (float) (Math.atan2(diffZ, diffX) * (180 / Math.PI)) - 90.0F;
-        float pitch = (float) (-(Math.atan2(diffY, dist) * (180 / Math.PI)));
+        float yaw = (float) (Math.atan2(diffZ, diffX) * (180.0 / Math.PI)) - 90.0F;
+        float pitch = (float) (-(Math.atan2(diffY, dist) * (180.0 / Math.PI)));
 
         client.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(
                 yaw, pitch, player.isOnGround()
         ));
 
-        // Step 2: Use explicit packet interaction instead of interactionManager to bypass client-side swing checks
-        BlockHitResult hitResult = new BlockHitResult(hitVec, side, pos, false);
+        BlockHitResult hitResult = newBlockHitResult(hitVec, side, pos);
+        
+        // In 1.21.1 Yarn, PlayerInteractBlockC2SPacket takes Hand, BlockHitResult, and sequence ID
+        int sequence = client.world != null ? client.world.getPendingUpdateManager().incrementSequence().getSequence() : 0;
         PlayerInteractBlockC2SPacket packet = new PlayerInteractBlockC2SPacket(
                 Hand.MAIN_HAND,
                 hitResult,
-                0
+                sequence
         );
 
         client.getNetworkHandler().sendPacket(packet);
         player.swingHand(Hand.MAIN_HAND);
     }
 
+    private static BlockHitResult newBlockHitResult(Vec3d hitVec, Direction side, BlockPos pos) {
+        return new BlockHitResult(hitVec, side, pos, false);
+    }
+
     private static BlockPos findNextMissingBlock(World world) {
-        // Stub: Integrates with litematic structure data
         return null;
     }
 
     private static int findRequiredItemSlot(ClientPlayerEntity player) {
-        for (int i = 0; i < 9; i++) { // Hotbar only for secure placement
+        for (int i = 0; i < 9; i++) {
             ItemStack stack = player.getInventory().getStack(i);
             if (!stack.isEmpty() && stack.getItem() instanceof BlockItem) {
                 return i;
