@@ -14,6 +14,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public final class BuilderManager {
@@ -39,11 +41,25 @@ public final class BuilderManager {
         );
     }
 
+    public static boolean start(MinecraftClient client) {
+        if (selectedSchematic == null) return false;
+        AutoBuilderClient.state = AutoBuilderClient.BuildState.BUILDING;
+        AutoBuilderClient.message(client, "§aStarted building schematic.");
+        return true;
+    }
+
+    public static Map<String, Long> getMaterials() {
+        Map<String, Long> materials = new HashMap<>();
+        // Stub: Returns required materials map for MaterialsScreen
+        return materials;
+    }
+
     public static void tick(MinecraftClient client) {
         if (selectedSchematic == null ||
                 client.player == null ||
                 client.world == null ||
-                client.interactionManager == null) {
+                client.interactionManager == null ||
+                AutoBuilderClient.state != AutoBuilderClient.BuildState.BUILDING) {
             return;
         }
 
@@ -93,7 +109,7 @@ public final class BuilderManager {
         Direction side = Direction.UP;
 
         double diffX = hitVec.x - player.getX();
-        double diffY = hitVec.y - (player.getY() + player.getEyeHeight());
+        double diffY = hitVec.y - (player.getY() + player.getEyeHeight(player.getPose()));
         double diffZ = hitVec.z - player.getZ();
         double dist = Math.sqrt(diffX * diffX + diffZ * diffZ);
 
@@ -101,25 +117,19 @@ public final class BuilderManager {
         float pitch = (float) (-(Math.atan2(diffY, dist) * (180.0 / Math.PI)));
 
         client.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(
-                yaw, pitch, player.isOnGround()
+                yaw, pitch, player.isOnGround(), player.horizontalCollision
         ));
 
-        BlockHitResult hitResult = newBlockHitResult(hitVec, side, pos);
+        BlockHitResult hitResult = new BlockHitResult(hitVec, side, pos, false);
         
-        // In 1.21.1 Yarn, PlayerInteractBlockC2SPacket takes Hand, BlockHitResult, and sequence ID
-        int sequence = client.world != null ? client.world.getPendingUpdateManager().incrementSequence().getSequence() : 0;
         PlayerInteractBlockC2SPacket packet = new PlayerInteractBlockC2SPacket(
                 Hand.MAIN_HAND,
                 hitResult,
-                sequence
+                0
         );
 
         client.getNetworkHandler().sendPacket(packet);
         player.swingHand(Hand.MAIN_HAND);
-    }
-
-    private static BlockHitResult newBlockHitResult(Vec3d hitVec, Direction side, BlockPos pos) {
-        return new BlockHitResult(hitVec, side, pos, false);
     }
 
     private static BlockPos findNextMissingBlock(World world) {
@@ -158,5 +168,6 @@ public final class BuilderManager {
         selectedSchematic = null;
         missingItem = null;
         tickCounter = 0;
+        AutoBuilderClient.state = AutoBuilderClient.BuildState.IDLE;
     }
 }
