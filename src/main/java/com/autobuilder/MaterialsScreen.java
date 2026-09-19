@@ -59,26 +59,26 @@ public class MaterialsScreen extends Screen {
 
     @Override public void render(DrawContext c, int mouseX, int mouseY, float delta) {
         super.render(c, mouseX, mouseY, delta);
-        c.drawCenteredTextWithShadow(textRenderer, "Materials - " + (BuilderManager.getSelectedName() == null ? "None" : BuilderManager.getSelectedName()), width/2, 16, 0xFFFFFF);
+        c.drawCenteredTextWithShadow(textRenderer, "Materials - " + (BuilderManager.getSelectedName() == null ? "None" : BuilderManager.getSelectedName()), width/2, 16, 0xFFFFFFFF);
         if (error != null) {
-            c.drawCenteredTextWithShadow(textRenderer, "Could not read schematic: " + error, width/2, 50, 0xFF5555);
+            c.drawCenteredTextWithShadow(textRenderer, "Could not read schematic: " + error, width/2, 50, 0xFFFFFF5555);
             return;
         }
-        c.drawTextWithShadow(textRenderer, "Material", width/2 - 190, 38, 0xAAAAAA);
-        c.drawTextWithShadow(textRenderer, "Required", width/2 + 45, 38, 0xAAAAAA);
-        c.drawTextWithShadow(textRenderer, "Have", width/2 + 105, 38, 0xAAAAAA);
-        c.drawTextWithShadow(textRenderer, "Missing", width/2 + 150, 38, 0xAAAAAA);
+        c.drawTextWithShadow(textRenderer, "Material", width/2 - 190, 38, 0xFFAAAAAA);
+        c.drawTextWithShadow(textRenderer, "Required", width/2 + 45, 38, 0xFFAAAAAA);
+        c.drawTextWithShadow(textRenderer, "Have", width/2 + 105, 38, 0xFFAAAAAA);
+        c.drawTextWithShadow(textRenderer, "Missing", width/2 + 150, 38, 0xFFAAAAAA);
         int visible = Math.max(1, (height - 95) / 12);
         scroll = Math.max(0, Math.min(scroll, Math.max(0, rows.size() - visible)));
         int y = 54;
         for (int i = scroll; i < rows.size() && i < scroll + visible; i++, y += 12) {
             Row r = rows.get(i);
-            c.drawTextWithShadow(textRenderer, r.name, width/2 - 190, y, 0xFFFFFF);
-            c.drawTextWithShadow(textRenderer, Long.toString(r.required), width/2 + 45, y, 0xFFFFFF);
-            c.drawTextWithShadow(textRenderer, Long.toString(r.have), width/2 + 105, y, r.have >= r.required ? 0x55FF55 : 0xFFFF55);
-            c.drawTextWithShadow(textRenderer, Long.toString(r.missing()), width/2 + 150, y, r.missing() == 0 ? 0x55FF55 : 0xFF5555);
+            c.drawTextWithShadow(textRenderer, r.name, width/2 - 190, y, 0xFFFFFFFF);
+            c.drawTextWithShadow(textRenderer, Long.toString(r.required), width/2 + 45, y, 0xFFFFFFFF);
+            c.drawTextWithShadow(textRenderer, Long.toString(r.have), width/2 + 105, y, r.have >= r.required ? 0xFF55FF55 : 0xFFFFFF55);
+            c.drawTextWithShadow(textRenderer, Long.toString(r.missing()), width/2 + 150, y, r.missing() == 0 ? 0xFF55FF55 : 0xFFFFFF5555);
         }
-        c.drawCenteredTextWithShadow(textRenderer, "Mouse wheel to scroll", width/2, height - 45, 0x777777);
+        c.drawCenteredTextWithShadow(textRenderer, "Mouse wheel to scroll", width/2, height - 45, 0xFF777777);
     }
 
     @Override public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {

@@ -49,7 +49,7 @@ public final class LitematicMaterials {
                     Object entryObj = palette.get(paletteIndex);
                     if (!(entryObj instanceof Map<?, ?> entry)) continue;
                     Object nameObj = entry.get("Name");
-                    if (!(nameObj instanceof String name) || name.equals("minecraft:air") || name.endsWith(":cave_air") || name.endsWith(":void_air")) continue;
+                    if (!(nameObj instanceof String name) || name.equals("minecraft:air") || name.endsWith(":cave_air") || name.endsWith(":void_air") || name.equals("minecraft:nether_portal")) continue;
                     result.merge(name, 1L, Long::sum);
                 }
             }
