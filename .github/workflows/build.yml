@@ -1,35 +1,81 @@
-name: Build AutoSchematicBuilder
+plugins {
+    id 'fabric-loom' version '1.16.3'
+    id 'maven-publish'
+}
 
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
+version = project.mod_version
+group = project.maven_group
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+base {
+    archivesName = project.archives_base_name
+}
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+repositories {
+    mavenCentral()
 
-      - name: Setup Java 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
+    maven {
+        name = "Fabric"
+        url = "https://maven.fabricmc.net/"
+    }
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '9.4.0'
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+    }
+}
 
-      - name: Build mod
-        run: gradle build --stacktrace
+loom {
+    splitEnvironmentSourceSets()
 
-      - name: Upload JAR
-        uses: actions/upload-artifact@v4
-        with:
-          name: AutoSchematicBuilder-1.21.11
-          path: build/libs/*.jar
+    mods {
+        "autoschematicbuilder" {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+}
+
+sourceSets {
+    client {
+        java {
+            srcDir "src/main/java"
+        }
+    }
+
+    main {
+        java {
+            setSrcDirs([])
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+
+    mappings "net.fabricmc:yarn:1.21.11+build.6:v2"
+
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    modClientImplementation "net.fabricmc.fabric-api:fabric-api:0.141.3+1.21.11"
+
+    modClientCompileOnly "maven.modrinth:GcWjdA9I:oaU4Ys3J"
+    modClientCompileOnly "maven.modrinth:bEpr0Arc:R9maucI8"
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
