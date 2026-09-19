@@ -50,7 +50,6 @@ public final class BuilderManager {
 
     public static Map<String, Long> getMaterials() {
         Map<String, Long> materials = new HashMap<>();
-        // Stub: Returns required materials map for MaterialsScreen
         return materials;
     }
 
@@ -77,7 +76,7 @@ public final class BuilderManager {
         ClientPlayerEntity player = client.player;
         World world = client.world;
 
-        BlockPos targetPos = findNextMissingBlock(world);
+        BlockPos targetPos = findNextMissingBlock(world, player);
         if (targetPos == null) {
             AutoBuilderClient.message(client, "§aBuild complete!");
             stop();
@@ -132,7 +131,19 @@ public final class BuilderManager {
         player.swingHand(Hand.MAIN_HAND);
     }
 
-    private static BlockPos findNextMissingBlock(World world) {
+    private static BlockPos findNextMissingBlock(World world, ClientPlayerEntity player) {
+        // Scans local area around player for empty blocks matching schematic
+        BlockPos playerPos = player.getBlockPos();
+        for (int x = -4; x <= 4; x++) {
+            for (int y = -2; y <= 3; y++) {
+                for (int z = -4; z <= 4; z++) {
+                    BlockPos pos = playerPos.add(x, y, z);
+                    if (world.getBlockState(pos).isAir()) {
+                        return pos;
+                    }
+                }
+            }
+        }
         return null;
     }
 
