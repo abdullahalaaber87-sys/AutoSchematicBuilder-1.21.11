@@ -22,7 +22,7 @@ public final class BuilderManager {
 
     private static File selectedSchematic;
     private static String missingItem;
-    
+
     private static int tickCounter = 0;
     private static int placementDelay = 3;
     private static final Random random = new Random();
@@ -42,7 +42,10 @@ public final class BuilderManager {
     }
 
     public static boolean start(MinecraftClient client) {
-        if (selectedSchematic == null) return false;
+        if (selectedSchematic == null) {
+            return false;
+        }
+
         AutoBuilderClient.state = AutoBuilderClient.BuildState.BUILDING;
         AutoBuilderClient.message(client, "§aStarted building schematic.");
         return true;
@@ -65,18 +68,19 @@ public final class BuilderManager {
         if (tickCounter++ < placementDelay) {
             return;
         }
-        
-        placementDelay = 2 + random.nextInt(3); 
+
+        placementDelay = 2 + random.nextInt(3);
         tickCounter = 0;
 
-        processBypassPlacement(client);
+        processPlacement(client);
     }
 
-    private static void processBypassPlacement(MinecraftClient client) {
+    private static void processPlacement(MinecraftClient client) {
         ClientPlayerEntity player = client.player;
         World world = client.world;
 
         BlockPos targetPos = findNextMissingBlock(world, player);
+
         if (targetPos == null) {
             AutoBuilderClient.message(client, "§aBuild complete!");
             stop();
@@ -88,72 +92,119 @@ public final class BuilderManager {
         }
 
         int slot = findRequiredItemSlot(player);
+
         if (slot == -1) {
             setMissingItem("Required Block");
             return;
         }
 
-        if (slot < 9) {
-            player.getInventory().selectedSlot = slot;
-        }
+        player.getInventory().selectedSlot = slot;
 
-        performBypassPlacement(client, targetPos);
+        performPlacement(client, targetPos);
     }
 
-    private static void performBypassPlacement(MinecraftClient client, BlockPos pos) {
+    private static void performPlacement(
+            MinecraftClient client,
+            BlockPos pos
+    ) {
         ClientPlayerEntity player = client.player;
-        if (player == null || client.getNetworkHandler() == null) return;
 
-        Vec3d hitVec = new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+        if (player == null || client.getNetworkHandler() == null) {
+            return;
+        }
+
+        Vec3d hitVec = new Vec3d(
+                pos.getX() + 0.5,
+                pos.getY() + 0.5,
+                pos.getZ() + 0.5
+        );
+
         Direction side = Direction.UP;
 
         double diffX = hitVec.x - player.getX();
-        double diffY = hitVec.y - (player.getY() + player.getEyeHeight(player.getPose()));
+        double diffY =
+                hitVec.y -
+                (player.getY() + player.getEyeHeight(player.getPose()));
         double diffZ = hitVec.z - player.getZ();
-        double dist = Math.sqrt(diffX * diffX + diffZ * diffZ);
 
-        float yaw = (float) (Math.atan2(diffZ, diffX) * (180.0 / Math.PI)) - 90.0F;
-        float pitch = (float) (-(Math.atan2(diffY, dist) * (180.0 / Math.PI)));
-
-        client.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(
-                yaw, pitch, player.isOnGround(), player.horizontalCollision
-        ));
-
-        BlockHitResult hitResult = new BlockHitResult(hitVec, side, pos, false);
-        
-        PlayerInteractBlockC2SPacket packet = new PlayerInteractBlockC2SPacket(
-                Hand.MAIN_HAND,
-                hitResult,
-                0
+        double dist = Math.sqrt(
+                diffX * diffX +
+                diffZ * diffZ
         );
+
+        float yaw =
+                (float) (Math.atan2(diffZ, diffX) *
+                (180.0 / Math.PI)) - 90.0F;
+
+        float pitch =
+                (float) (-(Math.atan2(diffY, dist) *
+                (180.0 / Math.PI)));
+
+        client.getNetworkHandler().sendPacket(
+                new PlayerMoveC2SPacket.LookAndOnGround(
+                        yaw,
+                        pitch,
+                        player.isOnGround(),
+                        player.horizontalCollision
+                )
+        );
+
+        BlockHitResult hitResult =
+                new BlockHitResult(
+                        hitVec,
+                        side,
+                        pos,
+                        false
+                );
+
+        PlayerInteractBlockC2SPacket packet =
+                new PlayerInteractBlockC2SPacket(
+                        Hand.MAIN_HAND,
+                        hitResult,
+                        0
+                );
 
         client.getNetworkHandler().sendPacket(packet);
         player.swingHand(Hand.MAIN_HAND);
     }
 
-    private static BlockPos findNextMissingBlock(World world, ClientPlayerEntity player) {
-        // Scans local area around player for empty blocks matching schematic
+    private static BlockPos findNextMissingBlock(
+            World world,
+            ClientPlayerEntity player
+    ) {
         BlockPos playerPos = player.getBlockPos();
+
         for (int x = -4; x <= 4; x++) {
             for (int y = -2; y <= 3; y++) {
                 for (int z = -4; z <= 4; z++) {
-                    BlockPos pos = playerPos.add(x, y, z);
+
+                    BlockPos pos =
+                            playerPos.add(x, y, z);
+
                     if (world.getBlockState(pos).isAir()) {
                         return pos;
                     }
                 }
             }
         }
+
         return null;
     }
 
-    private static int findRequiredItemSlot(ClientPlayerEntity player) {
+    private static int findRequiredItemSlot(
+            ClientPlayerEntity player
+    ) {
         for (int i = 0; i < 9; i++) {
-            ItemStack stack = player.getInventory().getStack(i);
-            if (!stack.isEmpty() && stack.getItem() instanceof BlockItem) {
+
+            ItemStack stack =
+                    player.getInventory().getStack(i);
+
+            if (!stack.isEmpty() &&
+                    stack.getItem() instanceof BlockItem) {
                 return i;
             }
         }
+
         return -1;
     }
 
@@ -162,7 +213,9 @@ public final class BuilderManager {
     }
 
     public static String getSelectedName() {
-        return selectedSchematic == null ? null : selectedSchematic.getName();
+        return selectedSchematic == null
+                ? null
+                : selectedSchematic.getName();
     }
 
     public static String getMissingItem() {
@@ -171,14 +224,23 @@ public final class BuilderManager {
 
     public static void setMissingItem(String itemName) {
         missingItem = itemName;
-        AutoBuilderClient.state = AutoBuilderClient.BuildState.PAUSED;
-        AutoBuilderClient.message(MinecraftClient.getInstance(), "§cMissing material: §f" + itemName);
+
+        AutoBuilderClient.state =
+                AutoBuilderClient.BuildState.PAUSED;
+
+        AutoBuilderClient.message(
+                MinecraftClient.getInstance(),
+                "§cYou are missing a material! (§f"
+                        + itemName + "§c)"
+        );
     }
 
     public static void stop() {
         selectedSchematic = null;
         missingItem = null;
         tickCounter = 0;
-        AutoBuilderClient.state = AutoBuilderClient.BuildState.IDLE;
+
+        AutoBuilderClient.state =
+                AutoBuilderClient.BuildState.IDLE;
     }
 }
