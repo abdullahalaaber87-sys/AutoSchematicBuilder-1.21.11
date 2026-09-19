@@ -32,9 +32,11 @@ public class BuilderScreen extends Screen {
                 Text.literal("Start Build"),
                 button -> {
                     if (BuilderManager.hasBuild()) {
-                        AutoBuilderClient.state = AutoBuilderClient.BuildState.RUNNING;
-                        AutoBuilderClient.message(client, "§aBuilder started");
-                        close();
+                        if (BuilderManager.start(client)) {
+                            AutoBuilderClient.state = AutoBuilderClient.BuildState.RUNNING;
+                            AutoBuilderClient.message(client, "§aBuilder started");
+                            close();
+                        }
                     } else {
                         AutoBuilderClient.message(client, "§cSelect a schematic first");
                     }
@@ -70,7 +72,7 @@ public class BuilderScreen extends Screen {
                 "Auto Schematic Builder",
                 width / 2,
                 30,
-                0xFFFFFF
+                0xFFFFFFFF
         );
 
         context.drawCenteredTextWithShadow(
@@ -78,7 +80,7 @@ public class BuilderScreen extends Screen {
                 "Status: " + AutoBuilderClient.state,
                 width / 2,
                 48,
-                0xAAAAAA
+                0xFFAAAAAA
         );
 
         String missing = BuilderManager.getMissingItem();
@@ -89,7 +91,7 @@ public class BuilderScreen extends Screen {
                     "Missing: " + missing,
                     width / 2,
                     200,
-                    0xFF5555
+                    0xFFFF5555
             );
         }
     }
