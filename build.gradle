@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.7.2'
+    id 'fabric-loom' version '1.8.9'
     id 'maven-publish'
 }
 
@@ -15,11 +15,11 @@ repositories {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${project.hasProperty('minecraft_version') ? project.minecraft_version : '1.21.1'}"
-    mappings "net.fabricmc:yarn:${project.hasProperty('yarn_mappings') ? project.yarn_mappings : '1.21.1+build.3'}:v2"
+    minecraft "com.mojang:minecraft:${project.hasProperty('minecraft_version') ? project.minecraft_version : '1.21.11'}"
+    mappings "net.fabricmc:yarn:${project.hasProperty('yarn_mappings') ? project.yarn_mappings : '1.21.11+build.3'}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.hasProperty('loader_version') ? project.loader_version : '0.15.11'}"
 
-    def fabricVersion = project.hasProperty('fabric_version') ? project.fabric_version : '0.97.8+1.21'
+    def fabricVersion = project.hasProperty('fabric_version') ? project.fabric_version : '0.97.8+1.21.11'
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabricVersion}"
 }
 
