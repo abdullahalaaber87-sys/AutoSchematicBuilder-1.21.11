@@ -1,14 +1,12 @@
 package com.autobuilder;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import org.lwjgl.glfw.GLFW;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.text.Text;
 
 public class AutoBuilderClient implements ClientModInitializer {
     public static BuildState state = BuildState.STOPPED;
 
-    // الحالات المطلوبة تماماً
     public enum BuildState {
         RUNNING,
         PAUSED,
@@ -17,6 +15,13 @@ public class AutoBuilderClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        // كل وظائف الـ Keybinds والـ GUI الأصلية الخاصة بك تبقى هنا
+        // نقطة البداية الأصلية للمود
+    }
+
+    // دالة الرسائل الأصلية التي كانت تبحث عنها كل الملفات الأخرى لتجنب أخطاء البناء
+    public static void message(MinecraftClient client, String text) {
+        if (client != null && client.player != null) {
+            client.player.sendMessage(Text.literal(text), false);
+        }
     }
 }
