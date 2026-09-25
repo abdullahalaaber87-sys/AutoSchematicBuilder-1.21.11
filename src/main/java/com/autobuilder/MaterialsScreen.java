@@ -28,16 +28,15 @@ public class MaterialsScreen extends Screen {
             List<Row> list = new ArrayList<>();
 
             for (var e : needed.entrySet()) {
-                long have = countInventory(e.getKey());
                 list.add(new Row(
+                        e.getKey(),
                         pretty(e.getKey()),
-                        e.getValue(),
-                        have
+                        e.getValue()
                 ));
             }
 
             list.sort(
-                    Comparator.comparingLong(Row::missing)
+                    Comparator.comparingLong((Row r) -> Math.max(0, r.required() - countInventory(r.id())))
                             .reversed()
                             .thenComparing(Row::name)
             );
@@ -73,7 +72,7 @@ public class MaterialsScreen extends Screen {
             return 0;
         }
 
-        var item = Registries.ITEM.get(identifier);
+        var item = Registries.BLOCK.get(identifier).asItem();
         long count = 0;
 
         for (var stack : client.player.getInventory().getMainStacks()) {
@@ -193,6 +192,8 @@ public class MaterialsScreen extends Screen {
 
         for (int i = scroll; i < end; i++) {
             Row r = rows.get(i);
+            long have = countInventory(r.id());
+            long missing = Math.max(0, r.required() - have);
 
             c.drawTextWithShadow(
                     textRenderer,
@@ -212,7 +213,7 @@ public class MaterialsScreen extends Screen {
 
             c.drawTextWithShadow(
                     textRenderer,
-                    Long.toString(r.have()),
+                    Long.toString(have),
                     width / 2 + 90,
                     y,
                     0xFFAAAAAA
@@ -220,10 +221,10 @@ public class MaterialsScreen extends Screen {
 
             c.drawTextWithShadow(
                     textRenderer,
-                    Long.toString(r.missing()),
+                    Long.toString(missing),
                     width / 2 + 150,
                     y,
-                    r.missing() == 0
+                    missing == 0
                             ? 0xFF55FF55
                             : 0xFFFF5555
             );
@@ -267,12 +268,8 @@ public class MaterialsScreen extends Screen {
     }
 
     private record Row(
+            String id,
             String name,
-            long required,
-            long have
-    ) {
-        long missing() {
-            return Math.max(0, required - have);
-        }
-    }
+            long required
+    ) {}
 }

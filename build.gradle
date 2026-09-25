@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.17-SNAPSHOT'
+    id 'fabric-loom' version '1.16.3'
     id 'maven-publish'
 }
 
@@ -11,15 +11,55 @@ base {
 }
 
 repositories {
-    // Add repositories here if needed
+    mavenCentral()
+
+    maven {
+        name = "Fabric"
+        url = "https://maven.fabricmc.net/"
+    }
+
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+    }
+}
+
+loom {
+    splitEnvironmentSourceSets()
+
+    mods {
+        "autoschematicbuilder" {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+}
+
+sourceSets {
+    client {
+        java {
+            srcDir "src/main/java"
+        }
+    }
+
+    main {
+        java {
+            setSrcDirs([])
+        }
+    }
 }
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+
+    mappings "net.fabricmc:yarn:1.21.11+build.6:v2"
+
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modClientImplementation "net.fabricmc.fabric-api:fabric-api:0.141.3+1.21.11"
+
+    modClientCompileOnly "maven.modrinth:GcWjdA9I:oaU4Ys3J"
+    modClientCompileOnly "maven.modrinth:bEpr0Arc:R9maucI8"
 }
 
 processResources {
@@ -31,18 +71,11 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 21
+    options.release = 21
 }
 
 java {
+    withSourcesJar()
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
-
-    withSourcesJar()
-}
-
-jar {
-    from("LICENSE") {
-        rename { "${it}_${project.archivesBaseName}" }
-    }
 }

@@ -8,10 +8,12 @@ import net.minecraft.text.Text;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Comparator;
 
 public class SchematicListScreen extends Screen {
 
     private final Screen parent;
+    private int page;
 
     public SchematicListScreen(Screen parent) {
         super(Text.literal("Select Schematic"));
@@ -33,17 +35,15 @@ public class SchematicListScreen extends Screen {
                 file.getName().toLowerCase().endsWith(".litematic")
         );
 
+        int perPage = Math.max(1, (height - 105) / 24);
         int y = 45;
 
         if (files != null && files.length > 0) {
-            Arrays.sort(files, (a, b) ->
-                    a.getName().compareToIgnoreCase(b.getName())
-            );
+            Arrays.sort(files, Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
 
-            for (File file : files) {
-                if (y > height - 60) {
-                    break;
-                }
+            page = Math.min(page, (files.length - 1) / perPage);
+            for (int i = page * perPage; i < Math.min(files.length, (page + 1) * perPage); i++) {
+                File file = files[i];
 
                 addDrawableChild(ButtonWidget.builder(
                         Text.literal(file.getName()),
@@ -66,6 +66,18 @@ public class SchematicListScreen extends Screen {
                             + folder.getAbsolutePath()
             );
         }
+
+        int count = files == null ? 0 : files.length;
+        var previous = addDrawableChild(ButtonWidget.builder(Text.literal("<"), b -> {
+            page--;
+            clearAndInit();
+        }).dimensions(width / 2 - 150, height - 55, 35, 20).build());
+        previous.active = page > 0;
+        var next = addDrawableChild(ButtonWidget.builder(Text.literal(">"), b -> {
+            page++;
+            clearAndInit();
+        }).dimensions(width / 2 + 115, height - 55, 35, 20).build());
+        next.active = (page + 1) * perPage < count;
 
         addDrawableChild(ButtonWidget.builder(
                 Text.literal("Back"),
@@ -94,6 +106,8 @@ public class SchematicListScreen extends Screen {
                 20,
                 0xFFFFFF
         );
+        if (files == null || files.length == 0) context.drawCenteredTextWithShadow(
+                textRenderer, "No files in .minecraft/schematics", width / 2, 55, 0xFFFFFF55);
     }
 
     @Override

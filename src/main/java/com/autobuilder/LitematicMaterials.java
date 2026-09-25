@@ -25,7 +25,7 @@ public final class LitematicMaterials {
                 List<?> palette = asList(region.get("BlockStatePalette"));
                 long[] states = asLongArray(region.get("BlockStates"));
                 Map<?, ?> size = asMap(region.get("Size"));
-                if (palette == null || states == null || size == null || palette.isEmpty()) continue;
+                if (palette == null || size == null || palette.isEmpty() || (states == null && palette.size() != 1)) continue;
 
                 int sx = Math.abs(number(size.get("x")));
                 int sy = Math.abs(number(size.get("y")));
@@ -40,11 +40,11 @@ public final class LitematicMaterials {
                     long bitIndex = (long) i * bits;
                     int longIndex = (int) (bitIndex >>> 6);
                     int startBit = (int) (bitIndex & 63);
-                    if (longIndex >= states.length) break;
-                    long value = states[longIndex] >>> startBit;
+                    if (palette.size() != 1 && longIndex >= states.length) break;
+                    long value = palette.size() == 1 ? 0 : states[longIndex] >>> startBit;
                     int spill = startBit + bits - 64;
-                    if (spill > 0 && longIndex + 1 < states.length) value |= states[longIndex + 1] << (bits - spill);
-                    int paletteIndex = (int) (value & mask);
+                    if (palette.size() != 1 && spill > 0 && longIndex + 1 < states.length) value |= states[longIndex + 1] << (bits - spill);
+                    int paletteIndex = palette.size() == 1 ? 0 : (int) (value & mask);
                     if (paletteIndex < 0 || paletteIndex >= palette.size()) continue;
                     Object entryObj = palette.get(paletteIndex);
                     if (!(entryObj instanceof Map<?, ?> entry)) continue;

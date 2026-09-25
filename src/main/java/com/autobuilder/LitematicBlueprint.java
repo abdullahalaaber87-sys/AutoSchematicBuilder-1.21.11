@@ -27,7 +27,7 @@ public final class LitematicBlueprint {
                 long[] states = asLongArray(region.get("BlockStates"));
                 Map<?, ?> size = asMap(region.get("Size"));
                 Map<?, ?> pos = asMap(region.get("Position"));
-                if (palette == null || states == null || size == null || palette.isEmpty()) continue;
+                if (palette == null || size == null || palette.isEmpty() || (states == null && palette.size() != 1)) continue;
 
                 int rawX = number(size.get("x"));
                 int rawY = number(size.get("y"));
@@ -46,7 +46,7 @@ public final class LitematicBlueprint {
                     int x = i % sx;
                     int z = (i / sx) % sz;
                     int y = i / (sx * sz);
-                    int paletteIndex = paletteIndex(states, i, bits, mask);
+                    int paletteIndex = palette.size() == 1 ? 0 : paletteIndex(states, i, bits, mask);
                     if (paletteIndex < 0 || paletteIndex >= palette.size()) continue;
                     Object entryObj = palette.get(paletteIndex);
                     if (!(entryObj instanceof Map<?, ?> entry)) continue;
