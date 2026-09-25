@@ -14,6 +14,7 @@ public class SchematicListScreen extends Screen {
 
     private final Screen parent;
     private int page;
+    private File[] files = new File[0];
 
     public SchematicListScreen(Screen parent) {
         super(Text.literal("Select Schematic"));
@@ -30,7 +31,7 @@ public class SchematicListScreen extends Screen {
             folder.mkdirs();
         }
 
-        File[] files = folder.listFiles(file ->
+        files = folder.listFiles(file ->
                 file.isFile() &&
                 file.getName().toLowerCase().endsWith(".litematic")
         );
